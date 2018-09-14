@@ -83,6 +83,17 @@ if (!program.skipPackager) {
     );
   }
 
+  let isUsingWatchFolders = false;
+  try {
+    // eslint-disable-next-line global-require
+    const startInfo = require('react-native/local-cli/server/server');
+    isUsingWatchFolders = startInfo.options.some(option =>
+      option.command.startsWith('--watchFolders')
+    );
+  } catch (e) {
+    console.warn(`Unable to load react-native start options: ${e.message}`, e);
+  }
+
   let cliCommand = 'react-native start';
 
   if (program.metroConfig) {
@@ -97,7 +108,9 @@ if (!program.skipPackager) {
   exec(
     [
       cliCommand,
-      `--projectRoots ${projectRoots.join(',')}`,
+      isUsingWatchFolders
+        ? `--watchFolders ${projectRoots.join(',')}`
+        : `--projectRoots ${projectRoots.join(',')}`,
       program.resetCache && '--reset-cache',
       program.packagerPort && `--port=${program.packagerPort}`,
     ]
